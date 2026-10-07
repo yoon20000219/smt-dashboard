@@ -80,7 +80,11 @@ def card(r, dry=False):
             r['slack'] = 'dry'
         else:
             with st.spinner('슬랙으로 보내는 중…'):
-                r['slack'] = W.send(r) or 'fail'
+                try:
+                    r['slack'] = W.send(r) or 'fail'
+                except Exception as e:                    # 토큰 · 채널 문제로 앱이 멈추지 않게 (키 값은 화면에 안 나옴)
+                    r['slack'] = 'fail'
+                    st.error(f'슬랙 보내기 실패 : {type(e).__name__} · {str(e)[:120]}')
     sent = {True: '✅ 슬랙 #smt-알림 으로 보냄 (@channel · 사례 PDF · 작업지시서 워드)', 'dry': '시험 모드라 슬랙은 보내지 않음',
             'fail': '⚠ 슬랙 보내기 실패 (SLACK_BOT_TOKEN · SLACK_CHANNEL 확인)'}.get(r['slack'], '아직 슬랙으로 보내지 않음 → 「📤 슬랙으로 보내기」')
     tile = lambda lab, val, sub='': (

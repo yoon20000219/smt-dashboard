@@ -179,6 +179,9 @@ def send_slack_bot(text, files):
     token, ch = uenv('SLACK_BOT_TOKEN'), uenv('SLACK_CHANNEL')
     if not (token and ch):
         return False
+    token, ch = token.strip().strip('"\''), ch.strip().strip('"\'')
+    if not (token.isascii() and token.startswith('xox')):   # 예시 글자(「실제토큰」)가 그대로 들어간 경우 등
+        raise ValueError('SLACK_BOT_TOKEN 값이 실제 토큰이 아님 → Secrets 에 xoxb- 로 시작하는 봇 토큰을 넣으세요')
     from slack_sdk import WebClient
     c = WebClient(token=token)
     ch_id = ch
