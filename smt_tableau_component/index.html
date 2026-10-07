@@ -30,17 +30,17 @@ async function onSelect(ev) {
     const sheet = ev.detail.worksheet.name;
     const marks = await ev.detail.getMarksAsync();
     const t = (marks.data || []).find(d => d.data && d.data.length);
-    if (!t) { say(`선택 해제 (${sheet})`); send(null); return; }
+    if (!t) { say(''); send(null); return; }
     const cols = t.columns, row = t.data[0];
     const v = (c) => (c ? (c.nativeValue ?? c.value ?? c.formattedValue) : null);
     const item = v(pick(cols, row, n => n.includes('검사항목') || n.includes('검사 항목')));
     const band = v(pick(cols, row, n => n.includes('판정 구간') || n.includes('처리구분')));
     const box = v(pick(cols, row, n => n.includes('박스')));
     if (!item && !box) {
-      say(`선택 받음 (${sheet}) · 작업지시서 대상 아님 · 열 : ${cols.map(c => c.fieldName).join(', ')}`);
+      say('');
       send(null); return;
     }
-    say(`✔ 선택 받음 : ${sheet} · ${item || ''} ${band || ''} ${box || ''}`);
+    say('');
     send({ sheet, item, band, box, t: Date.now() });
   } catch (e) {
     say('선택 읽기 오류 : ' + e);
@@ -53,7 +53,7 @@ function onUrl(ev) {
     const q = new URL(ev.detail.url).searchParams;
     if (!q.get('wo')) { window.open(ev.detail.url, '_blank'); return; }   // 다른 링크는 원래대로 새 탭
     const item = q.get('item'), band = q.get('band'), box = q.get('box');
-    say(`✔ 작업지시서 링크 : ${item || ''} ${band || ''} ${box || ''}`);
+    say('');
     send({ sheet: 'link', item, band, box, open: true, t: Date.now() });
   } catch (e) {
     say('링크 읽기 오류 : ' + e);
@@ -86,7 +86,7 @@ async function build(a) {
   viz.setAttribute('disable-url-actions', '');            // 도구 설명 「📋 작업지시서 발행」 링크를 새 탭 대신 이 화면에서 연다
   viz.addEventListener('urlaction', onUrl);
   viz.addEventListener('markselectionchanged', onSelect);
-  viz.addEventListener('firstinteractive', () => say('태블로 연결됨 · 신호등 칸이나 사례를 클릭하면 위에 「📋 작업지시서 발행」 버튼이 생겨요'));
+  viz.addEventListener('firstinteractive', () => say(''));
   viz.addEventListener('vizloaderror', (e) => say('태블로 불러오기 오류 : ' + JSON.stringify(e.detail || {})));
   say('태블로 불러오는 중…');
   host.appendChild(viz);

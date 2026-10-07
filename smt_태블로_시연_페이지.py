@@ -194,8 +194,6 @@ def page():
         return
     st.session_state.applied = True                       # 전체 검증셋 (새 검사 결과 반영 버튼은 뺌 · 경보는 재빈님 담당)
     st.subheader('AI 판정 검증 센터')
-    st.caption('신호등 칸 · 오판정 사례 · 선택한 사례를 클릭하면 위에 「📋 작업지시서 발행」 버튼이 생겨요 '
-               '→ 누르면 작업지시서 팝업 → 「📤 슬랙으로 보내기」 로 #smt-알림 에 알림 · 사례 PDF · 작업지시서 워드')
 
     bar = st.container()                                  # 선택 → 발행 버튼 자리 (태블로 위)
     sel = tableau(st.session_state.applied)
