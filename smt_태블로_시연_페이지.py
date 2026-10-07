@@ -35,7 +35,7 @@ def embed_target():
     mode = (st.query_params.get('tb') or os.environ.get('SMT_EMBED') or 'public').lower()   # ?embed= 는 Streamlit 예약어
     return (PUBLIC_SERVER, PUBLIC_VIEW) if mode == 'public' else (D.SERVER, VIEW)
 _HERE = os.path.dirname(os.path.abspath(__file__))
-_viz = components.declare_component('smt_tableau_viz', path=os.path.join(_HERE, 'smt_tableau_component'))
+from smt_viz import viz as _viz      # 컴포넌트는 영어 이름 모듈에서 등록 (한글 모듈 이름이면 클라우드에서 404)
 
 
 @st.cache_data
