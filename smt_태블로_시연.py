@@ -176,9 +176,9 @@ def view_url():
 # ───────── 슬랙 ─────────
 def send_slack_bot(text, files):
     """채널에 메시지 + 파일 (PDF · 워드) · SLACK_BOT_TOKEN (xoxb-) · SLACK_CHANNEL (이름 또는 ID)"""
-    token, ch = uenv('SLACK_BOT_TOKEN'), uenv('SLACK_CHANNEL')
-    if not (token and ch):
-        return False
+    token, ch = uenv('SLACK_BOT_TOKEN'), uenv('SLACK_CHANNEL') or 'smt-알림'   # 채널 이름은 비밀이 아니라 기본값을 둔다
+    if not token:
+        raise ValueError('SLACK_BOT_TOKEN 을 못 찾음 → 스트림릿 Secrets 에 SLACK_BOT_TOKEN = "xoxb-..." 한 줄이 있는지 확인')
     token, ch = token.strip().strip('"\''), ch.strip().strip('"\'')
     if not (token.isascii() and token.startswith('xox')):   # 예시 글자(「실제토큰」)가 그대로 들어간 경우 등
         raise ValueError('SLACK_BOT_TOKEN 값이 실제 토큰이 아님 → Secrets 에 xoxb- 로 시작하는 봇 토큰을 넣으세요')
