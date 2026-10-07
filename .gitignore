@@ -1,0 +1,7 @@
+.streamlit/secrets.toml
+__pycache__/
+*.pyc
+data/보고서/
+data/작업지시서_로그.csv
+data/stream_images/
+.venv/

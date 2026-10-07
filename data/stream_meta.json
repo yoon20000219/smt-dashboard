@@ -1,0 +1,36 @@
+{
+ "n": 559,
+ "t0": "2025-09-02 16:38:04",
+ "t1": "2025-09-03 11:21:28",
+ "sessions": {
+  "DEF_NB": 221,
+  "DEF_PB": 205,
+  "NOR_NB": 133
+ },
+ "median_gap_sec": 21.5,
+ "mapping": "A_센서데이터_원본 event 순번 규칙 (split 배치 패턴 일치)",
+ "frame_similarity": {
+  "DEF_NB": {
+   "consecutive": 0.023,
+   "random": 0.02
+  },
+  "DEF_PB": {
+   "consecutive": -0.0,
+   "random": 0.007
+  },
+  "NOR_NB": {
+   "consecutive": 0.011,
+   "random": 0.009
+  }
+ },
+ "sensor_lag1_abs_autocorr": {
+  "DEF_NB": 0.029,
+  "DEF_PB": 0.055,
+  "NOR_NB": 0.032
+ },
+ "model_alert_rate_conf025": {
+  "DEF_NB": 1.0,
+  "DEF_PB": 0.995,
+  "NOR_NB": 0.075
+ }
+}

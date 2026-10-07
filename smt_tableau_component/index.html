@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; padding: 0; background: transparent; font-family: Pretendard, 'Malgun Gothic', sans-serif; }
+  #msg { color: #6b7280; font-size: 13px; padding: 4px 2px; }
+</style>
+</head>
+<body>
+<div id="msg"></div>
+<div id="host"></div>
+<script type="module">
+// Streamlit 양방향 컴포넌트 (npm 없이 프로토콜 직접 구현)
+//   받는 값(args) : src · server · filter_field · filter_values · width · height
+//   돌려주는 값    : 대시보드에서 마크를 선택하면 {sheet, item, band, box, t}
+const post = (type, data = {}) => window.parent.postMessage({ isStreamlitMessage: true, type, ...data }, '*');
+const send = (value) => post('streamlit:setComponentValue', { value, dataType: 'json' });
+let built = '', viz = null;
+
+function pick(cols, row, test) {
+  const i = cols.findIndex(c => test(c.fieldName || ''));
+  return i < 0 ? null : row[i];
+}
+
+const say = (t) => { document.getElementById('msg').textContent = t; };
+
+async function onSelect(ev) {
+  try {
+    const sheet = ev.detail.worksheet.name;
+    const marks = await ev.detail.getMarksAsync();
+    const t = (marks.data || []).find(d => d.data && d.data.length);
+    if (!t) { say(`선택 해제 (${sheet})`); send(null); return; }
+    const cols = t.columns, row = t.data[0];
+    const v = (c) => (c ? (c.nativeValue ?? c.value ?? c.formattedValue) : null);
+    const item = v(pick(cols, row, n => n.includes('검사항목') || n.includes('검사 항목')));
+    const band = v(pick(cols, row, n => n.includes('판정 구간') || n.includes('처리구분')));
+    const box = v(pick(cols, row, n => n.includes('박스')));
+    if (!item && !box) {
+      say(`선택 받음 (${sheet}) · 작업지시서 대상 아님 · 열 : ${cols.map(c => c.fieldName).join(', ')}`);
+      send(null); return;
+    }
+    say(`✔ 선택 받음 : ${sheet} · ${item || ''} ${band || ''} ${box || ''}`);
+    send({ sheet, item, band, box, t: Date.now() });
+  } catch (e) {
+    say('선택 읽기 오류 : ' + e);
+  }
+}
+
+// 도구 설명 링크 (?wo=1&item=..&band=..&box=..) → 바로 작업지시서 팝업 (open: true)
+function onUrl(ev) {
+  try {
+    const q = new URL(ev.detail.url).searchParams;
+    if (!q.get('wo')) { window.open(ev.detail.url, '_blank'); return; }   // 다른 링크는 원래대로 새 탭
+    const item = q.get('item'), band = q.get('band'), box = q.get('box');
+    say(`✔ 작업지시서 링크 : ${item || ''} ${band || ''} ${box || ''}`);
+    send({ sheet: 'link', item, band, box, open: true, t: Date.now() });
+  } catch (e) {
+    say('링크 읽기 오류 : ' + e);
+  }
+}
+
+async function build(a) {
+  const key = JSON.stringify([a.src, a.filter_field, a.filter_values]);
+  post('streamlit:setFrameHeight', { height: (a.height || 1000) + 30 });
+  if (key === built) return;
+  built = key;
+  if (!window.__tableauLoaded) {
+    await import(a.server + '/javascripts/api/tableau.embedding.3.latest.min.js');
+    window.__tableauLoaded = true;
+  }
+  const host = document.getElementById('host');
+  host.innerHTML = '';
+  viz = document.createElement('tableau-viz');
+  viz.setAttribute('src', a.src);
+  viz.setAttribute('toolbar', 'hidden');
+  viz.setAttribute('hide-tabs', '');
+  viz.setAttribute('width', String(a.width || 1600));
+  viz.setAttribute('height', String(a.height || 1000));
+  if (a.filter_field && a.filter_values && a.filter_values.length) {
+    const f = document.createElement('viz-filter');
+    f.setAttribute('field', a.filter_field);
+    f.setAttribute('value', a.filter_values.join(','));
+    viz.appendChild(f);
+  }
+  viz.setAttribute('disable-url-actions', '');            // 도구 설명 「📋 작업지시서 발행」 링크를 새 탭 대신 이 화면에서 연다
+  viz.addEventListener('urlaction', onUrl);
+  viz.addEventListener('markselectionchanged', onSelect);
+  viz.addEventListener('firstinteractive', () => say('태블로 연결됨 · 신호등 칸이나 사례를 클릭하면 위에 「📋 작업지시서 발행」 버튼이 생겨요'));
+  viz.addEventListener('vizloaderror', (e) => say('태블로 불러오기 오류 : ' + JSON.stringify(e.detail || {})));
+  say('태블로 불러오는 중…');
+  host.appendChild(viz);
+}
+
+window.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'streamlit:render') build(e.data.args || {});
+});
+post('streamlit:componentReady', { apiVersion: 1 });
+</script>
+</body>
+</html>
