@@ -192,9 +192,13 @@ def send_slack_bot(text, files):
             if hit:
                 ch_id = hit[0]
                 break
-    c.chat_postMessage(channel=ch_id, text=text)
+    m = c.chat_postMessage(channel=ch_id, text=text)
+    up = []
     for f in files:
-        c.files_upload_v2(channel=ch_id, file=f, filename=os.path.basename(f), title=os.path.basename(f))
+        u = c.files_upload_v2(channel=ch_id, file=f, filename=os.path.basename(f), title=os.path.basename(f))
+        up.append(os.path.basename(f) if u.get('ok') else f'{os.path.basename(f)}(실패)')
+    global LAST_SLACK                                   # 화면에 보낸 곳 · 파일을 한 줄로 보여 주기용 (키 값 없음)
+    LAST_SLACK = f"채널 {ch_id} (#{ch.lstrip('#')}) · 메시지 {'OK' if m.get('ok') else '실패'} · 파일 {', '.join(up) or '없음'}"
     return True
 
 

@@ -82,6 +82,8 @@ def card(r, dry=False):
             with st.spinner('슬랙으로 보내는 중…'):
                 try:
                     r['slack'] = W.send(r) or 'fail'
+                    if r['slack'] is True:
+                        st.caption('보낸 곳 : ' + getattr(D, 'LAST_SLACK', ''))
                 except Exception as e:                    # 토큰 · 채널 문제로 앱이 멈추지 않게 (키 값은 화면에 안 나옴)
                     r['slack'] = 'fail'
                     st.error(f'슬랙 보내기 실패 : {type(e).__name__} · {str(e)[:120]}')
